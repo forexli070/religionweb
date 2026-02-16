@@ -1,0 +1,364 @@
+<!doctype html>
+
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sora AI Prompt Generator — Kiki</title>
+  <style>
+    :root{
+      --bg:#071022;
+      --panel: rgba(255,255,255,0.03);
+      --accent1:#00ffd5; /* cyan */
+      --accent2:#ff00c8; /* magenta */
+      --glow: 0 8px 30px rgba(0,255,213,0.07), 0 2px 8px rgba(255,0,200,0.04);
+      --glass: rgba(255,255,255,0.04);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono", monospace;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(0,255,213,0.02), transparent),
+                  radial-gradient(900px 500px at 90% 90%, rgba(255,0,200,0.02), transparent),
+                  var(--bg);
+      color:#e6eef8; -webkit-font-smoothing:antialiased;
+      padding:28px;
+    }
+    .wrap{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 420px;gap:20px;align-items:start}
+    header{grid-column:1/-1;display:flex;align-items:center;gap:16px;margin-bottom:6px}
+    .logo{font-family:var(--mono);letter-spacing:1px;padding:8px 12px;border-radius:10px;background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#001020;font-weight:700;box-shadow:var(--glow)}
+    h1{font-size:18px;margin:0}
+    p.lead{margin:0;color:rgba(230,238,248,0.7);font-size:13px}.panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);padding:18px;border-radius:12px;box-shadow:var(--glow)}
+
+form .field{margin-bottom:12px}
+label{display:block;font-size:12px;color:rgba(230,238,248,0.7);margin-bottom:6px}
+input[type=text], textarea, select{width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;font-size:14px}
+textarea{min-height:120px;resize:vertical;font-family:inherit}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
+.btn-primary{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#001020}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+
+/* output */
+.output{font-family:var(--mono);font-size:13px;background:linear-gradient(180deg, rgba(0,0,0,0.25), rgba(255,255,255,0.02));padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+.meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.chip{background:rgba(255,255,255,0.02);padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.03);font-size:12px}
+
+/* presets */
+.presets{display:flex;flex-direction:column;gap:8px}
+.preset{padding:10px;border-radius:8px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));cursor:pointer;border:1px solid rgba(255,255,255,0.03)}
+
+footer{grid-column:1/-1;margin-top:8px;color:rgba(230,238,248,0.6);font-size:12px}
+
+/* small screens */
+@media (max-width:980px){.wrap{grid-template-columns:1fr;}
+  .logo{display:none} }
+
+/* subtle scanlines for cyberpunk vibe (not animating heavily) */
+.scanlines::after{content:"";position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px);background-size:100% 6px;border-radius:14px}
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">SORA</div>
+      <div>
+        <h1>Sora AI Prompt Generator — Kiki</h1>
+        <p class="lead">Isi bidang di kiri, klik <strong>Generate</strong>. Prompt dihasilkan dalam Bahasa Indonesia, siap dipakai di Sora AI.</p>
+      </div>
+    </header><section class="panel" aria-label="Form pengaturan prompt">
+  <form id="promptForm">
+    <div class="field">
+      <label for="subject">Subjek / Tema (contoh: pembalap jalanan, kota neon, ritual teknologi)</label>
+      <input id="subject" type="text" placeholder="Masukkan subjek singkat..." value="kota neon lengang saat hujan" />
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label for="style">Gaya visual</label>
+        <select id="style">
+          <option>Cyberpunk</option>
+          <option>Neo-noir</option>
+          <option>Futuristic realism</option>
+          <option>Anime cyberpunk</option>
+          <option>Photorealistic</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="mood">Suasana / Mood</label>
+        <select id="mood">
+          <option>Melankolis</option>
+          <option>Dramatis</option>
+          <option>Misterius</option>
+          <option>Enerjik</option>
+          <option>Surreal</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label for="camera">Pandangan Kamera / Angle</label>
+        <select id="camera">
+          <option>Wide shot</option>
+          <option>Close-up</option>
+          <option>Overhead</option>
+          <option>Tracking shot</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="motion">Gerakan / Motion</label>
+        <select id="motion">
+          <option>Static cinematic</option>
+          <option>Slow dolly</option>
+          <option>Fast tracking</option>
+          <option>Handheld shaky</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label for="color">Warna dominan / Palet</label>
+        <input id="color" type="text" placeholder="mis. neon biru & magenta" value="neon biru & magenta" />
+      </div>
+      <div class="field">
+        <label for="detail">Level detail</label>
+        <select id="detail">
+          <option>Rendah</option>
+          <option>Sedang</option>
+          <option selected>Tinggi</option>
+          <option>Ultra-detal</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="effects">Efek visual / Tekstur (opsional)</label>
+      <input id="effects" type="text" placeholder="mis. kabut, pantulan basah jalan, cahaya volumetrik" value="kabut tipis, pantulan basah jalan, cahaya volumetrik" />
+    </div>
+
+    <div class="field">
+      <label for="keywords">Kata kunci tambahan (pisahkan dengan koma)</label>
+      <input id="keywords" type="text" placeholder="mis. neon signs, hovercar, hologram" value="neon signs, hovercar, hologram" />
+    </div>
+
+    <div class="field">
+      <label for="negative">Negatif / Hindari (opsional)</label>
+      <input id="negative" type="text" placeholder="mis. teks, watermark, lowres" value="teks, watermark, lowres" />
+    </div>
+
+    <div class="field" style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+      <div class="controls">
+        <button type="button" id="generateBtn" class="btn btn-primary">Generate Prompt</button>
+        <button type="button" id="randomBtn" class="btn btn-ghost">Acak</button>
+        <button type="button" id="exampleFill" class="btn btn-ghost">Isi Contoh</button>
+      </div>
+      <div style="font-size:12px;color:rgba(230,238,248,0.7)">Format: Bahasa Indonesia · Siap pakai</div>
+    </div>
+
+  </form>
+</section>
+
+<aside class="panel">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div>
+      <div style="font-size:13px;font-weight:700">Preview Prompt</div>
+      <div style="font-size:12px;color:rgba(230,238,248,0.7)">Salin atau unduh hasil prompt untuk dipakai di Sora AI</div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <div class="chip" id="previewLabel">Cyberpunk · Bahasa Indonesia</div>
+    <div class="chip" id="lengthLabel">0 kata</div>
+  </div>
+
+  <div class="output" id="outputArea" role="region" aria-live="polite">
+    <textarea id="output" readonly style="width:100%;height:220px;background:transparent;border:0;color:inherit;padding:0;margin:0;resize:none;outline:none"></textarea>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <button id="copyBtn" class="btn btn-primary">Salin</button>
+    <button id="downloadBtn" class="btn btn-ghost">Unduh .txt</button>
+    <button id="clearBtn" class="btn btn-ghost">Bersihkan</button>
+  </div>
+
+  <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)" />
+
+  <div>
+    <div style="font-weight:700;margin-bottom:8px">Preset Cepat</div>
+    <div class="presets">
+      <div class="preset" data-subject="pembalap jalanan di jembatan neon" data-style="Cyberpunk" data-mood="Dramatis" data-camera="Tracking shot" data-motion="Fast tracking" data-color="neon biru & magenta" data-effects="pantulan basah jalan, kabut" data-keywords="hovercar, smoke" data-negative="watermark, teks">Pembalap Jalanan — Dramatis</div>
+      <div class="preset" data-subject="penjual hologram di gang kecil" data-style="Neo-noir" data-mood="Misterius" data-camera="Close-up" data-motion="Static cinematic" data-color="amber & cyan" data-effects="emisi cahaya hologram" data-keywords="holo-stall, crowds" data-negative="logo">Penjual Hologram — Misteri</div>
+    </div>
+  </div>
+
+</aside>
+
+<footer>
+  Diperbarui: versi lokal • Buka file ini di browser (offline). Ingin format lain? bilang saja.
+</footer>
+
+  </div>  <script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+      // Elemen
+      const $ = sel => document.querySelector(sel);
+      const subject = $('#subject');
+      const style = $('#style');
+      const mood = $('#mood');
+      const camera = $('#camera');
+      const motion = $('#motion');
+      const color = $('#color');
+      const detail = $('#detail');
+      const effects = $('#effects');
+      const keywords = $('#keywords');
+      const negative = $('#negative');
+
+      const output = $('#output');
+      const lengthLabel = $('#lengthLabel');
+      const previewLabel = $('#previewLabel');
+
+      const genBtn = $('#generateBtn');
+      const copyBtn = $('#copyBtn');
+      const dlBtn = $('#downloadBtn');
+      const clearBtn = $('#clearBtn');
+      const randomBtn = $('#randomBtn');
+      const exampleBtn = $('#exampleFill');
+
+      // Preset click
+      document.querySelectorAll('.preset').forEach(el=>{
+        el.addEventListener('click', ()=>{
+          subject.value = el.dataset.subject || '';
+          style.value = el.dataset.style || 'Cyberpunk';
+          mood.value = el.dataset.mood || 'Dramatis';
+          camera.value = el.dataset.camera || 'Wide shot';
+          motion.value = el.dataset.motion || 'Static cinematic';
+          color.value = el.dataset.color || '';
+          effects.value = el.dataset.effects || '';
+          keywords.value = el.dataset.keywords || '';
+          negative.value = el.dataset.negative || '';
+          generatePrompt();
+        })
+      })
+
+      function safeTrim(s){return (s||'').toString().trim()}
+
+      function generatePrompt(){
+        const parts=[];
+        const s = safeTrim(subject.value);
+        if(s) parts.push(`Subjek: ${s}.`);
+
+        const st = safeTrim(style.value);
+        if(st) parts.push(`Gaya visual: ${st}.`);
+
+        const mo = safeTrim(mood.value);
+        if(mo) parts.push(`Suasana: ${mo}.`);
+
+        const cam = safeTrim(camera.value);
+        const mot = safeTrim(motion.value);
+        if(cam || mot) parts.push(`Kamera: ${cam}${cam && mot?', ':''}${mot ? mot: ''}.`);
+
+        const col = safeTrim(color.value);
+        if(col) parts.push(`Palet warna: ${col}.`);
+
+        const det = safeTrim(detail.value);
+        if(det) parts.push(`Tingkat detail: ${det}.`);
+
+        const eff = safeTrim(effects.value);
+        if(eff) parts.push(`Efek visual: ${eff}.`);
+
+        const kw = safeTrim(keywords.value);
+        if(kw) parts.push(`Kata kunci tambahan: ${kw}.`);
+
+        const neg = safeTrim(negative.value);
+        if(neg) parts.push(`Hindari: ${neg}.`);
+
+        // Add helpful production hints (generic and safe)
+        parts.push('Format output: sinematik, kualitas tinggi, frame-rate stabil.');
+        parts.push('Tingkat realisme sesuai gaya; hindari watermark, teks yang tidak diinginkan, dan artefak low-res.');
+
+        // Final assembly
+        const assembled = parts.join(' ');
+        output.value = assembled;
+        lengthLabel.textContent = `${assembled.split(/\s+/).filter(Boolean).length} kata`;
+
+        // preview label
+        previewLabel.textContent = `${st} · Bahasa Indonesia`;
+      }
+
+      genBtn.addEventListener('click', (e)=>{ e.preventDefault(); generatePrompt(); });
+
+      copyBtn.addEventListener('click', ()=>{
+        const text = output.value;
+        if(!text) return alert('Belum ada prompt. Klik "Generate Prompt" terlebih dahulu.');
+        navigator.clipboard.writeText(text).then(()=>{
+          copyBtn.textContent = 'Disalin ✓';
+          setTimeout(()=>copyBtn.textContent = 'Salin',800);
+        }).catch(()=>{
+          alert('Gagal menyalin otomatis — silakan salin manual.');
+        });
+      });
+
+      dlBtn.addEventListener('click', ()=>{
+        const text = output.value;
+        if(!text) return alert('Belum ada prompt untuk diunduh.');
+        const blob = new Blob([text], {type:'text/plain'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'sora_prompt.txt'; document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+      });
+
+      clearBtn.addEventListener('click', ()=>{
+        output.value = '';
+        lengthLabel.textContent = '0 kata';
+      });
+
+      randomBtn.addEventListener('click', ()=>{
+        // Lightweight randomizer — deterministic arrays to avoid unsafe content
+        const subjects = ['kota neon lengang saat hujan','pembalap jalanan di jembatan neon','penjual hologram di gang kecil','laboratorium ilegal berlampu merah','market jaringan bawah tanah'];
+        const styles = ['Cyberpunk','Neo-noir','Futuristic realism','Anime cyberpunk','Photorealistic'];
+        const moods = ['Melankolis','Dramatis','Misterius','Enerjik','Surreal'];
+        const cameras = ['Wide shot','Close-up','Overhead','Tracking shot'];
+        const motions = ['Static cinematic','Slow dolly','Fast tracking','Handheld shaky'];
+        const colors = ['neon biru & magenta','amber & cyan','hijau asam & ungu','monochrome biru'];
+        const effectsList = ['kabut tipis','pantulan basah jalan','cahaya volumetrik','partikel debu','glow halus'];
+        const keywordsList = ['hovercar','neon signs','hologram','drone','smoke'];
+
+        subject.value = subjects[Math.floor(Math.random()*subjects.length)];
+        style.value = styles[Math.floor(Math.random()*styles.length)];
+        mood.value = moods[Math.floor(Math.random()*moods.length)];
+        camera.value = cameras[Math.floor(Math.random()*cameras.length)];
+        motion.value = motions[Math.floor(Math.random()*motions.length)];
+        color.value = colors[Math.floor(Math.random()*colors.length)];
+        effects.value = effectsList[Math.floor(Math.random()*effectsList.length)];
+        keywords.value = keywordsList.sort(()=>0.5-Math.random()).slice(0,3).join(', ');
+        negative.value = 'watermark, teks, lowres';
+        generatePrompt();
+      });
+
+      exampleBtn.addEventListener('click', ()=>{
+        subject.value = 'seorang cyborg memainkan gitar di atap gedung';
+        style.value = 'Anime cyberpunk';
+        mood.value = 'Melankolis';
+        camera.value = 'Close-up';
+        motion.value = 'Slow dolly';
+        color.value = 'neon ungu & biru';
+        effects.value = 'cahaya volumetrik, percikan hujan';
+        keywords.value = 'cyborg, gitar, rooftop, cityscape';
+        negative.value = 'watermark, teks, lowres';
+        generatePrompt();
+      });
+
+      // Safety: prevent accidental form submit reload
+      document.getElementById('promptForm').addEventListener('submit', (e)=>{ e.preventDefault(); generatePrompt(); });
+
+      // init
+      generatePrompt();
+    });
+  </script></body>
+</html>
